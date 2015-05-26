@@ -55,6 +55,7 @@ $(function() {
 		initialize: function() {
 			console.log("New Todo-item created");			
 			this.model.on("change", this.render, this);
+			this.model.on("destroy", this.deleteModel, this);								
 			_.bindAll(this, "saveOnBlur");
 
 		},
@@ -73,7 +74,7 @@ $(function() {
 
 		events: {
 			'change input' : 'toggleCheckbox',
-			'click .close' : 'deleteItem',
+			'click .close' : 'deleteModel',
 			'click .edit' : 'editText',
 			'blur .textarea' : 'saveOnBlur'				
 		},
@@ -118,25 +119,11 @@ $(function() {
 
 			console.log("Description after edit: " + this.model.get("description"));
 			
-		},
+		},	
 
-		deleteItem: function(e, $thisItem) {
-			console.log("Items in collection before delete: "  + todoItems.length);
-
-			//Get list item wrapper to remove it
-			$thisItem = $(e.target).closest(".item-wrapper");
-
-			//Remove list tiem wrapper from DOM
-			$thisItem.fadeOut({
-				duration: 200,
-				done: function() {
-					$(this).remove();
-				}
-			});
-
-			//Remmove model from collection
+		deleteModel: function() {			
+			this.$el.remove();
 			todoItems.remove(this.model);
-			console.log("Items in collection after delete: "  + todoItems.length);
 		}
 
 	});
@@ -165,22 +152,72 @@ $(function() {
 
 			this.collection.on("add", this.render, this);
 			this.collection.on("remove", this.render, this);
+
+
+
+			//The change event triggers when a model inside the collection changes. This is for the toggleCheckbox trigger
+			//so that the legend updates.
+			this.collection.on("change", this.render, this);			
 		},
 
 		collection: todoItems,		
 
-		template: _.template('<span class="items-number">' 
-			+ '<span class="items-left"><%= this.returnItemsLeft() %></span>' 
-			+ '<% if (this.returnItemsLeft() === 1) { %> item <% } %><% if (this.returnItemsLeft() !== 1) { %> items <% } %>' 
-			+ 'left to do.</span>'),
+		template: _.template($("#remaining-items").html()),
 
-		returnItemsLeft: function() {
+		events: {
+			'click .clear-completed' : 'clearCompleted',
+			'click .items-left.active' : 'showActive',
+			'click .items-left.completed' : 'showCompleted'
+		},
+
+		totalItemsLeft: function() {
 			return this.collection.length;
 		},
 
-		render: function() {
-			this.$el.html(this.template());
+		activeItemsLeft: function() {
+			return this.collection.activeItems().length;
+		},
+
+		completedItems: function() {
+			return this.collection.completedItems().length;
+		},
+
+		showActive: function() {
+			console.log("active items");
+			var activeItems = this.collection.activeItems();
+			this.collection.reset(activeItems);
+		},
+
+		showCompleted: function() {
+			var completedItems = this.collection.completedItems();
+			this.collection.reset(completedItems);
+		},
+
+		//Thing to remember: the variables and functions declared inside the render function are accessible
+		//inside the HTML markup. This is how the html files references the totalItems, activeItems and 
+		//completedItems variables below. Remember that even though the html markup exists inside the 
+		//<script type="text/template"> ... </script> tags, it still needs to be inserted into the DOM
+		//by doing an append, insertAfter, etc. (done below)
+		render: function() {			
+
+			var totalItems  = this.totalItemsLeft(),
+				activeItems = this.activeItemsLeft(),
+				completedItems = this.completedItems();
+
+			this.$el.html(this.template({
+				totalItems: totalItems,
+				activeItems: activeItems,
+				completedItems: completedItems
+			}));
+
 			this.$el.insertAfter(".items");
+		},
+
+		clearCompleted: function() {
+			//Invoke takes a list as its first parameter, the second is the method you apply to each item
+			//completedItems() returns the models that are completed, and then each one has the "destroy"
+			//method applied to them
+			_.invoke(this.collection.completedItems(), "destroy");
 		}
 
 	});
@@ -189,9 +226,10 @@ $(function() {
 	 * Create new legend view instance and attach it to the DOM * 
 	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-	 var legend = new Legend();
+	 var legend = new Legend({collection: todoItems});
 
-	 legend.render();	 
+	 legend.render();
+
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 	 * Create a new Backbone View that will hold the collection of list items *
@@ -202,10 +240,12 @@ $(function() {
 		initialize: function() {
 			this.$el.addClass("todoListView");
 			this.collection.on("add", this.addItem, this);
+			this.collection.on("reset", this.render, this);			
 		},
 
 		render: function() {
 
+			this.$el.empty();
 			this.collection.forEach(this.addItem, this);
 
 			return this;
@@ -226,6 +266,33 @@ $(function() {
 
 	var todoList = new TodoListView({collection: todoItems});
 
+	/* * * * * 
+	 * Debug *
+	 * * * * */
+
+	 var Debug = Backbone.View.extend({
+
+	 	initialize: function() {
+	 		this.collection.on("add", this.render, this);
+	 		this.collection.on("reset", this.render, this);
+	 		this.$el.appendTo(".debug-wrapper");
+	 	},
+
+	 	collection: todoItems,
+
+	 	template: _.template($("#debug").html()),
+
+	 	render: function() {
+	 		var length = this.collection.length;
+	 		this.$el.html(this.template({
+	 			length: length
+	 		}));	 		
+	 	}
+
+	 });
+
+	 var debug = new Debug();
+	 debug.render();
 
 	/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * *
 	 * Append each model to the collection el by using the methods from the TodoListView class, *

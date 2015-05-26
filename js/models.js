@@ -39,7 +39,23 @@ var todoItem = Backbone.Model.extend({
 var TodoItems = Backbone.Collection.extend({
 
 	localStorage: new Backbone.LocalStorage("testCollection"),
-	model: todoItem		
+	model: todoItem,
+
+	activeItems: function() {
+		return this.where({"status" :"incomplete"});
+	},
+
+	completedItems: function() {
+		return this.where({"status" : "complete"});
+	},
+
+	filterTask: function(status) {
+		var filtered = this.filter(function(item){
+			return item.get("status") === status;
+		});
+		console.log(filtered);
+		return new TodoItems(filtered);
+	}	
 
 });
 
@@ -48,12 +64,4 @@ var TodoItems = Backbone.Collection.extend({
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
  
 var todoItems = new TodoItems();
-
-
-
-todoItems.map(function(person, index) {
-	console.log(person.attributes);
-});
-
-console.log(todoItems.length);
 
