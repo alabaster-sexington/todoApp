@@ -53,8 +53,9 @@ var TodoItems = Backbone.Collection.extend({
 		var filtered = this.filter(function(item){
 			return item.get("status") === status;
 		});
-		console.log(filtered);
-		return new TodoItems(filtered);
+		_.each(filtered, function(filteredItem) {
+			
+		});
 	}	
 
 });

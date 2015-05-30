@@ -184,13 +184,12 @@ $(function() {
 
 		showActive: function() {
 			console.log("active items");
-			var activeItems = this.collection.activeItems();
-			this.collection.reset(activeItems);
+			this.collection.activeItems();
+
 		},
 
 		showCompleted: function() {
-			var completedItems = this.collection.completedItems();
-			this.collection.reset(completedItems);
+			this.collection.completedItems();
 		},
 
 		//Thing to remember: the variables and functions declared inside the render function are accessible
@@ -275,6 +274,7 @@ $(function() {
 	 	initialize: function() {
 	 		this.collection.on("add", this.render, this);
 	 		this.collection.on("reset", this.render, this);
+	 		this.collection.on("change", this.render, this);
 	 		this.$el.appendTo(".debug-wrapper");
 	 	},
 
@@ -283,9 +283,14 @@ $(function() {
 	 	template: _.template($("#debug").html()),
 
 	 	render: function() {
-	 		var length = this.collection.length;
+	 		var length = this.collection.length,
+	 			activeItems = this.collection.activeItems().length,
+	 			completedItems = this.collection.completedItems().length;
+
 	 		this.$el.html(this.template({
-	 			length: length
+	 			length: length,
+	 			activeItems: activeItems,
+	 			completedItems: completedItems
 	 		}));	 		
 	 	}
 
