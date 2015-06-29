@@ -5,7 +5,8 @@
 var todoItem = Backbone.Model.extend({
 	defaults: {
 		"description" : "not specified",
-		"status" : "incomplete"
+		"status" : "incomplete",
+		"display" : true
 	},
 
 	initialize: function() {
@@ -46,7 +47,20 @@ var TodoItems = Backbone.Collection.extend({
 	},
 
 	completedItems: function() {
-		return this.where({"status" : "complete"});
+		// var array = [];	
+		// _.each(this, function(item) {
+		// 	console.log("this: " + this);
+		// 	console.log(this);
+		// 	console.log("item: " + item);
+		// 	if(item.get("status") === "complete") {
+		// 		this.item.set({"display" : true});
+		// 		array.push(item);
+		// 	} else {
+		// 		this.item.set({"display" : false});
+		// 	}
+		// }, this);
+		// return array;
+		return this.where({"status" : "complete"});		
 	},
 
 	filterTask: function(status) {

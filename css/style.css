@@ -79,6 +79,14 @@ span {
 	margin-top:20px;
 }
 
+.hide {
+	display:none;
+}
+
+.show {
+	display:block;
+}
+
 /* Style placeholder */
 
 ::-webkit-input-placeholder {

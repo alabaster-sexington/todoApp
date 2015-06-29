@@ -68,7 +68,13 @@ $(function() {
 
 		render: function() {						
 			this.$el.html(this.template(this.model.toJSON()));
-			this.$el.addClass("item-wrapper");
+
+			if(this.model.get("display") === true) {
+				this.$el.addClass("item-wrapper");				
+			} else {
+				this.$el.addClass("hide");
+			}
+			
 			return this;
 		},
 
@@ -185,7 +191,6 @@ $(function() {
 		showActive: function() {
 			console.log("active items");
 			this.collection.activeItems();
-
 		},
 
 		showCompleted: function() {
