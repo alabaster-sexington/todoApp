@@ -66,14 +66,29 @@ $(function() {
 			+ '<span class="edit">edit</span>'
 			+ '<span class="close">x</span>'),
 
-		render: function() {						
-			this.$el.html(this.template(this.model.toJSON()));
+		render: function() {
 
-			if(this.model.get("display") === true) {
-				this.$el.addClass("item-wrapper");				
-			} else {
-				this.$el.addClass("hide");
-			}
+			var displayStatus	  = this.model.get("display"),
+				$viewElement 	  = this.$el;
+
+			$viewElement.html(this.template(this.model.toJSON()));
+			$viewElement.addClass("item-wrapper").addClass("show");
+
+			//filtering
+			if(displayStatus) {
+
+				if(displayStatus === "false") {
+
+					if($viewElement.hasClass("hide") == false) $viewElement.addClass("hide"); 
+
+				} else if(displayStatus === "true") {
+
+					if($viewElement.hasClass("hide")) {
+						$viewElement.removeClass("hide");
+					}
+
+				}
+			} 
 			
 			return this;
 		},
@@ -172,29 +187,31 @@ $(function() {
 
 		events: {
 			'click .clear-completed' : 'clearCompleted',
-			'click .items-left.active' : 'showActive',
-			'click .items-left.completed' : 'showCompleted'
+			'click .items-left.active' : 'filterActive',
+			'click .items-left.completed' : 'filterCompleted'
 		},
 
+		filterActive: function() {			
+			this.collection.filterActiveItems();
+		},
+
+		filterCompleted: function() {
+			this.collection.filterCompletedItems();
+		},
+
+		//Show how many items there are left to do...
 		totalItemsLeft: function() {
 			return this.collection.length;
 		},
 
+		//Get active items length
 		activeItemsLeft: function() {
 			return this.collection.activeItems().length;
 		},
 
-		completedItems: function() {
+		//Get completed Items length
+		completedItemsLeft: function() {
 			return this.collection.completedItems().length;
-		},
-
-		showActive: function() {
-			console.log("active items");
-			this.collection.activeItems();
-		},
-
-		showCompleted: function() {
-			this.collection.completedItems();
 		},
 
 		//Thing to remember: the variables and functions declared inside the render function are accessible
@@ -204,14 +221,16 @@ $(function() {
 		//by doing an append, insertAfter, etc. (done below)
 		render: function() {			
 
-			var totalItems  = this.totalItemsLeft(),
-				activeItems = this.activeItemsLeft(),
-				completedItems = this.completedItems();
+			var totalItems  	   = this.totalItemsLeft(),
+				activeItems 	   = this.activeItemsLeft(),
+				completedItems 	   = this.completedItemsLeft(),
+				showAllItemsButton = false;
 
 			this.$el.html(this.template({
 				totalItems: totalItems,
 				activeItems: activeItems,
-				completedItems: completedItems
+				completedItems: completedItems,
+				showAllItemsButton: showAllItemsButton
 			}));
 
 			this.$el.insertAfter(".items");

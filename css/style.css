@@ -73,6 +73,7 @@ span {
 
 .items-left {
 	color:orange;
+	cursor:pointer;
 }
 
 .active-and-completed-items {
@@ -80,10 +81,10 @@ span {
 }
 
 .hide {
-	display:none;
+	display:none!important;
 }
 
-.show {
+.item-wrapper {
 	display:block;
 }
 

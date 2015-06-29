@@ -6,7 +6,7 @@ var todoItem = Backbone.Model.extend({
 	defaults: {
 		"description" : "not specified",
 		"status" : "incomplete",
-		"display" : true
+		"display" : "true"
 	},
 
 	initialize: function() {
@@ -42,35 +42,57 @@ var TodoItems = Backbone.Collection.extend({
 	localStorage: new Backbone.LocalStorage("testCollection"),
 	model: todoItem,
 
+	filterActiveItems: function() {
+		console.log("filtering active items");
+		
+		var completedItems = this.where({"status" :"complete"}),
+			activeItems    = this.where({"status": "incomplete"});			
+		
+		_.each(completedItems, function(item) {
+
+			item.set("display", "false");
+
+		});
+
+		_.each(activeItems, function(item) {
+
+			item.set("display", "true");
+
+		});
+
+		return completedItems;
+	},
+
+	filterCompletedItems: function() {
+		
+		console.log("filtering completed items");
+		var activeItems 	= this.where({"status" :"incomplete"}),
+			completedItems  = this.where({"status" :"complete"})			
+		//console.dir(completedItems[1]);
+
+		_.each(activeItems, function(item) {
+
+			item.set("display", "false");
+
+		});
+
+		_.each(completedItems, function(item) {
+
+			item.set("display", "true");
+
+		});
+
+		return activeItems;
+	},
+
 	activeItems: function() {
-		return this.where({"status" :"incomplete"});
+		return this.where({"status" : "incomplete"});
 	},
 
 	completedItems: function() {
-		// var array = [];	
-		// _.each(this, function(item) {
-		// 	console.log("this: " + this);
-		// 	console.log(this);
-		// 	console.log("item: " + item);
-		// 	if(item.get("status") === "complete") {
-		// 		this.item.set({"display" : true});
-		// 		array.push(item);
-		// 	} else {
-		// 		this.item.set({"display" : false});
-		// 	}
-		// }, this);
-		// return array;
-		return this.where({"status" : "complete"});		
-	},
-
-	filterTask: function(status) {
-		var filtered = this.filter(function(item){
-			return item.get("status") === status;
-		});
-		_.each(filtered, function(filteredItem) {
-			
-		});
-	}	
+		return this.where({"status" : "complete"});
+	}
+	
 
 });
 
